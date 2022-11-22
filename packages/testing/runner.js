@@ -3,13 +3,15 @@ import { argv, env, exit } from 'process';
 import parseArgs from 'minimist';
 import { packages } from './config.js';
 
-const args = parseArgs(argv.slice(1), {
+console.log('testcafe');
+
+const args = parseArgs(argv && argv.slice(1) || [], {
   default: {
-    project: '',
-    page: '',
+    project: 'react',
+    page: 'crm-contact-details',
     concurrency: '0',
     quarantineMode: false,
-    theme: '',
+    theme: 'material.light',
   },
 });
 
@@ -20,31 +22,37 @@ if (args.project === '' && args.page === '') {
 }
 
 let testCafe;
-createTestCafe('localhost', 1437, 1438)
-  .then((tc) => {
-    testCafe = tc;
+try {
+  createTestCafe()
+    .then((tc) => {
+      console.log('testcafe created');
+      testCafe = tc;
 
-    const runner = testCafe.createRunner()
-      .browsers('chrome:headless')
-      .reporter('minimal')
-      .src([
-        `tests/${args.page}.test.js`,
-      ]);
-    runner.cache = true;
+      const runner = testCafe.createRunner()
+        .browsers('chrome:headless')
+        .reporter('minimal')
+        .src([
+          `tests/${args.page}.test.js`,
+        ]);
+      runner.cache = true;
 
-    if (args.concurrency > 0) {
-      runner.concurrency(args.concurrency);
-    }
+      if (args.concurrency > 0) {
+        runner.concurrency(args.concurrency);
+      }
 
-    env.project = args.project;
-    env.port = currentPackage.port;
-    env.theme = args.theme;
+      env.project = args.project || 'react';
+      env.port = currentPackage.port;
+      env.theme = args.theme || 'material.light';
 
-    return runner.run({
-      quarantineMode: args.quarantineMode === 'true',
-    });
-  })
-  .then((failedCount) => {
-    testCafe.close();
-    exit(failedCount);
-  });
+      return runner.run({
+        quarantineMode: args.quarantineMode === 'true',
+      });
+    })
+    .then((failedCount) => {
+      testCafe.close();
+      exit(failedCount);
+    })
+    .catch((e) => { console.log(e); });
+} catch (e) {
+  console.log(e);
+}

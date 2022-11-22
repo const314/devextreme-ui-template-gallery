@@ -34,7 +34,7 @@ export const toogleEmbeddedClass = ClientFunction((embed) => {
 });
 
 export const getPostfix = (embedded, screenMode) => {
-  const theme = process.env.theme;
+  const theme = process.env.theme || 'material.light';
   return `-embed=${embedded}-${theme}-${screenMode[0]}`;
 };
 
